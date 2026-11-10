@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberDecode Pro — Декодер и Дешифратор</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        code, textarea, input.font-mono, select.font-mono { font-family: 'Fira Code', monospace; }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
+
+    <!-- Header / Navigation -->
+    <header class="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-gradient-to-tr from-brand-600 to-indigo-600 text-white rounded-xl shadow-lg shadow-brand-500/20">
+                    <i class="fa-solid fa-terminal text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold leading-tight flex items-center gap-2">
+                        CyberDecode Pro
+                        <span class="text-[10px] bg-brand-500/10 text-brand-600 dark:text-brand-400 font-mono px-2 py-0.5 rounded-full border border-brand-500/20">v2.5</span>
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Универсальный крипто-декодер и анализатор</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <!-- Auto Detect Quick Button -->
+                <button id="magicBtn" class="flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-medium text-sm transition-all shadow-md hover:shadow-purple-500/25 active:scale-95">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span class="hidden sm:inline">Авто-определение</span>
+                </button>
+
+                <!-- Theme Toggle -->
+                <button id="themeToggleBtn" class="p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-800" title="Переключить тему">
+                    <i class="fa-solid fa-moon text-base hidden dark:block"></i>
+                    <i class="fa-solid fa-sun text-base block dark:hidden"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Control Bar: Mode Toggle & Category Selector -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <!-- Encode / Decode Toggle Switch -->
+            <div class="flex bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl w-full md:w-auto border border-slate-200/60 dark:border-slate-700/50">
+                <button id="modeDecode" class="flex-1 md:flex-none px-6 py-2 rounded-lg font-semibold text-sm transition-all shadow-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-white">
+                    <i class="fa-solid fa-unlock mr-2 text-emerald-500"></i>Декодировать
+                </button>
+                <button id="modeEncode" class="flex-1 md:flex-none px-6 py-2 rounded-lg font-semibold text-sm transition-all text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                    <i class="fa-solid fa-lock mr-2 text-brand-500"></i>Закодировать
+                </button>
+            </div>
+
+            <!-- Algorithm Category Tabs -->
+            <div class="flex items-center gap-1 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 text-sm">
+                <button data-category="base" class="category-btn active border-b-2 border-brand-600 text-brand-600 font-semibold px-3.5 py-2 whitespace-nowrap transition-colors">Base & URL</button>
+                <button data-category="cipher" class="category-btn text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 px-3.5 py-2 whitespace-nowrap transition-colors">Шифры & Энигма</button>
+                <button data-category="hash" class="category-btn text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 px-3.5 py-2 whitespace-nowrap transition-colors">Хэширование</button>
+                <button data-category="text" class="category-btn text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 px-3.5 py-2 whitespace-nowrap transition-colors">Регистр & Текст</button>
+            </div>
+        </div>
+
+        <!-- Algorithm Specific Controls Bar -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                
+                <!-- Algorithm Dropdown Select -->
+                <div class="flex items-center space-x-3 w-full sm:w-auto flex-1">
+                    <label for="algoSelect" class="text-sm font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">Алгоритм:</label>
+                    <select id="algoSelect" class="w-full sm:w-auto bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm rounded-xl focus:ring-brand-500 focus:border-brand-500 px-3.5 py-2 font-medium outline-none">
+                        <!-- Populated by JavaScript -->
+                    </select>
+                </div>
+
+                <!-- Caesar Shift Option -->
+                <div id="caesarOptions" class="hidden flex items-center space-x-3">
+                    <label for="caesarShift" class="text-sm font-medium text-slate-500 dark:text-slate-400">Сдвиг:</label>
+                    <input type="number" id="caesarShift" min="1" max="25" value="3" class="w-20 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm rounded-xl px-3 py-2 font-mono">
+                    <button id="caesarBruteBtn" class="px-3.5 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold transition-colors">
+                        <i class="fa-solid fa-list-ol mr-1 text-brand-500"></i>Все 25 вар.
+                    </button>
+                </div>
+
+                <!-- Live Auto-Process Checkbox -->
+                <div class="flex items-center space-x-2">
+                    <input type="checkbox" id="liveToggle" checked class="w-4 h-4 text-brand-600 bg-slate-100 border-slate-300 rounded focus:ring-brand-500 dark:bg-slate-800 dark:border-slate-700">
+                    <label for="liveToggle" class="text-xs font-medium text-slate-600 dark:text-slate-400 select-none cursor-pointer">Мгновенный пересчет</label>
+                </div>
+            </div>
+
+            <!-- ENIGMA M3 ROTOR PANEL (Dynamically Visible) -->
+            <div id="enigmaPanel" class="hidden border-t border-slate-200 dark:border-slate-800 pt-4 mt-2">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-gear text-amber-500"></i> Панель управления Enigma M3
+                    </span>
+                    <span class="text-[11px] text-slate-400">Сам себе обратно-симметричен</span>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-slate-50 dark:bg-slate-950/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800/80">
+                    <!-- Rotors Selection -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Роторы (Л | С | П)</label>
+                        <div class="grid grid-cols-3 gap-1">
+                            <select id="enigmaRotorL" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs rounded-lg p-1.5 font-mono"></select>
+                            <select id="enigmaRotorM" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs rounded-lg p-1.5 font-mono"></select>
+                            <select id="enigmaRotorR" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs rounded-lg p-1.5 font-mono"></select>
+                        </div>
+                    </div>
+
+                    <!-- Rotor Positions -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Позиция роторов (A-Z)</label>
+                        <div class="grid grid-cols-3 gap-1">
+                            <select id="enigmaPosL" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs rounded-lg p-1.5 font-mono"></select>
+                            <select id="enigmaPosM" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs rounded-lg p-1.5 font-mono"></select>
+                            <select id="enigmaPosR" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs rounded-lg p-1.5 font-mono"></select>
+                        </div>
+                    </div>
+
+                    <!-- Ring Settings -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Кольца Ringstellung (1-26)</label>
+                        <div class="grid grid-cols-3 gap-1">
+                            <select id="enigmaRingL" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs rounded-lg p-1.5 font-mono"></select>
+                            <select id="enigmaRingM" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs rounded-lg p-1.5 font-mono"></select>
+                            <select id="enigmaRingR" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs rounded-lg p-1.5 font-mono"></select>
+                        </div>
+                    </div>
+
+                    <!-- Reflector & Plugboard -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-center">
+                            <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Рефлектор / Панель</label>
+                            <select id="enigmaReflector" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-[11px] rounded p-1 font-mono">
+                                <option value="B">Reflector B</option>
+                                <option value="C">Reflector C</option>
+                            </select>
+                        </div>
+                        <input type="text" id="enigmaPlugboard" placeholder="Коммутатор: AB CD EF" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs rounded-lg p-1.5 font-mono uppercase">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Editor Grid (Input / Output) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Input Panel -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden">
+                <div class="px-4 py-3 bg-slate-50/50 dark:bg-slate-800/40 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                        <i class="fa-solid fa-right-to-bracket text-brand-500"></i> Входные данные
+                    </span>
+                    <div class="flex items-center space-x-2">
+                        <!-- Paste Button -->
+                        <button id="pasteInputBtn" class="text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 font-medium" title="Вставить из буфера">
+                            <i class="fa-regular fa-clipboard text-brand-500"></i>
+                            <span>Вставить</span>
+                        </button>
+                        <!-- Clear Button -->
+                        <button id="clearInputBtn" class="text-xs text-slate-400 hover:text-red-500 px-2 py-1 rounded transition-colors" title="Очистить">
+                            <i class="fa-solid fa-trash-can mr-1"></i>Очистить
+                        </button>
+                    </div>
+                </div>
+                <div class="relative flex-1 min-h-[260px]">
+                    <textarea id="inputText" placeholder="Вставьте ваш текст или зашифрованную строку здесь..." class="w-full h-full p-4 bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 border-0 focus:ring-0 resize-none font-mono text-sm leading-relaxed outline-none"></textarea>
+                </div>
+                <div class="px-4 py-2 border-t border-slate-100 dark:border-slate-800/60 bg-slate-50/30 dark:bg-slate-900/30 flex justify-between items-center text-xs text-slate-400">
+                    <span id="inputCharCount">Символов: 0</span>
+                    <span id="inputWordCount">Слов: 0</span>
+                </div>
+            </div>
+
+            <!-- Output Panel -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden">
+                <div class="px-4 py-3 bg-slate-50/50 dark:bg-slate-800/40 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                        <i class="fa-solid fa-square-poll-vertical text-emerald-500"></i> Результат
+                    </span>
+                    <div class="flex items-center space-x-2">
+                        <button id="copyOutputBtn" class="text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium px-3 py-1 rounded-lg transition-colors flex items-center gap-1.5">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>Копировать</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="relative flex-1 min-h-[260px] bg-slate-50/30 dark:bg-slate-950/20">
+                    <textarea id="outputText" readonly placeholder="Результат обработки появится здесь..." class="w-full h-full p-4 bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 border-0 focus:ring-0 resize-none font-mono text-sm leading-relaxed outline-none"></textarea>
+                </div>
+                <div class="px-4 py-2 border-t border-slate-100 dark:border-slate-800/60 bg-slate-50/30 dark:bg-slate-900/30 flex justify-between items-center text-xs text-slate-400">
+                    <span id="outputCharCount">Символов: 0</span>
+                    <span id="statusMessage" class="text-emerald-500 font-medium">Готов</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Caesar Brute Force Results Container -->
+        <div id="bruteForceContainer" class="hidden bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-lg">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-brand-500"></i> Результаты перебора всех 25 сдвигов Цезаря
+                </h3>
+                <button id="closeBruteBtn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div id="bruteForceList" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+
+        <!-- Auto-Detect Results Panel -->
+        <div id="magicResultsContainer" class="hidden bg-white dark:bg-slate-900 rounded-2xl p-5 border border-purple-200 dark:border-purple-900/40 shadow-xl relative">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
+                <h3 class="font-bold text-purple-900 dark:text-purple-300 flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-purple-600"></i> Автоматический анализ кодировок
+                </h3>
+                <button id="closeMagicBtn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div id="magicResultsList" class="space-y-3">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 z-50 pointer-events-none border border-slate-800 dark:border-slate-200">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 dark:text-emerald-600"></i>
+        <span id="toastText" class="text-sm font-medium">Успешно!</span>
+    </div>
+
+    <!-- CryptoJS Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+    <!-- App Logic Script -->
+    <script>
+        // --- Algorithms Configuration ---
+        const ALGORITHMS = {
+            base: [
+                { id: 'base64', name: 'Base64' },
+                { id: 'base32', name: 'Base32' },
+                { id: 'hex', name: 'Hex (Шестнадцатеричный)' },
+                { id: 'binary', name: 'Binary (Двоичный)' },
+                { id: 'url', name: 'URL Encode / Decode' },
+                { id: 'html', name: 'HTML Entities' }
+            ],
+            cipher: [
+                { id: 'enigma', name: 'Шифровальная машина Enigma M3' },
+                { id: 'caesar', name: 'Шифр Цезаря (Caesar)' },
+                { id: 'rot13', name: 'ROT13' },
+                { id: 'atbash', name: 'Атбаш (Atbash)' },
+                { id: 'morse', name: 'Азбука Морзе (Morse)' }
+            ],
+            hash: [
+                { id: 'md5', name: 'MD5 (Односторонний хэш)' },
+                { id: 'sha1', name: 'SHA-1 (Односторонний хэш)' },
+                { id: 'sha256', name: 'SHA-256 (Односторонний хэш)' }
+            ],
+            text: [
+                { id: 'reverse', name: 'Инверсия строки (Reverse)' },
+                { id: 'uppercase', name: 'ВЕРХНИЙ РЕГИСТР' },
+                { id: 'lowercase', name: 'нижний регистр' },
+                { id: 'titlecase', name: 'Заглавные Буквы Слов' }
+            ]
+        };
+
+        // Morse Code Map
+        const MORSE_MAP = {
+            'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
+            'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
+            'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
+            'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+            'Y': '-.--', 'Z': '--..',
+            'А': '.-', 'Б': '-...', 'В': '.--', 'Г': '--.', 'Д': '-..', 'Е': '.', 'Ж': '...-',
+            'З': '--..', 'И': '..', 'Й': '.---', 'К': '-.-', 'Л': '.-..', 'М': '--', 'Н': '-.',
+            'О': '---', 'П': '.--.', 'Р': '.-.', 'С': '...', 'Т': '-', 'У': '..-', 'Ф': '..-.',
+            'Х': '....', 'Ц': '-.-.', 'Ч': '---.', 'Ш': '----', 'Щ': '--.-', 'Ъ': '--.--',
+            'Ы': '-.--', 'Ь': '-..-', 'Э': '..-..', 'Ю': '..--', 'Я': '.-.-',
+            '1': '.----', '2': '..---', '3': '...--', '4': '....-', '5': '.....',
+            '6': '-....', '7': '--...', '8': '---..', '9': '----.', '0': '-----',
+            ' ': '/'
+        };
+        const REVERSE_MORSE_MAP = Object.fromEntries(Object.entries(MORSE_MAP).map(([k, v]) => [v, k]));
+
+        // App State
+        let currentMode = 'decode';
+        let currentCategory = 'base';
+        let currentAlgorithm = 'base64';
+
+        // DOM Elements
+        const inputText = document.getElementById('inputText');
+        const outputText = document.getElementById('outputText');
+        const algoSelect = document.getElementById('algoSelect');
+        const modeDecodeBtn = document.getElementById('modeDecode');
+        const modeEncodeBtn = document.getElementById('modeEncode');
+        const categoryBtns = document.querySelectorAll('.category-btn');
+        const caesarOptions = document.getElementById('caesarOptions');
+        const caesarShiftInput = document.getElementById('caesarShift');
+        const caesarBruteBtn = document.getElementById('caesarBruteBtn');
+        const enigmaPanel = document.getElementById('enigmaPanel');
+        const bruteForceContainer = document.getElementById('bruteForceContainer');
+        const bruteForceList = document.getElementById('bruteForceList');
+        const closeBruteBtn = document.getElementById('closeBruteBtn');
+        const magicBtn = document.getElementById('magicBtn');
+        const magicResultsContainer = document.getElementById('magicResultsContainer');
+        const magicResultsList = document.getElementById('magicResultsList');
+        const closeMagicBtn = document.getElementById('closeMagicBtn');
+        const copyOutputBtn = document.getElementById('copyOutputBtn');
+        const pasteInputBtn = document.getElementById('pasteInputBtn');
+        const clearInputBtn = document.getElementById('clearInputBtn');
+        const liveToggle = document.getElementById('liveToggle');
+        const statusMessage = document.getElementById('statusMessage');
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+
+        // Enigma Elements
+        const enigmaRotorL = document.getElementById('enigmaRotorL');
+        const enigmaRotorM = document.getElementById('enigmaRotorM');
+        const enigmaRotorR = document.getElementById('enigmaRotorR');
+        const enigmaPosL = document.getElementById('enigmaPosL');
+        const enigmaPosM = document.getElementById('enigmaPosM');
+        const enigmaPosR = document.getElementById('enigmaPosR');
+        const enigmaRingL = document.getElementById('enigmaRingL');
+        const enigmaRingM = document.getElementById('enigmaRingM');
+        const enigmaRingR = document.getElementById('enigmaRingR');
+        const enigmaReflector = document.getElementById('enigmaReflector');
+        const enigmaPlugboard = document.getElementById('enigmaPlugboard');
+
+        // --- Initialization ---
+        function init() {
+            populateEnigmaDropdowns();
+            populateAlgoSelect('base');
+            setupEventListeners();
+            updateCharCounts();
+        }
+
+        function populateEnigmaDropdowns() {
+            const rotors = ['I', 'II', 'III', 'IV', 'V'];
+            const fillSelect = (el, arr, selected) => {
+                el.innerHTML = arr.map(v => `<option value="${v}" ${v===selected?'selected':''}>${v}</option>`).join('');
+            };
+            
+            fillSelect(enigmaRotorL, rotors, 'I');
+            fillSelect(enigmaRotorM, rotors, 'II');
+            fillSelect(enigmaRotorR, rotors, 'III');
+
+            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+            fillSelect(enigmaPosL, alphabet, 'A');
+            fillSelect(enigmaPosM, alphabet, 'A');
+            fillSelect(enigmaPosR, alphabet, 'A');
+
+            const numbers = Array.from({length: 26}, (_, i) => i + 1);
+            fillSelect(enigmaRingL, numbers, 1);
+            fillSelect(enigmaRingM, numbers, 1);
+            fillSelect(enigmaRingR, numbers, 1);
+        }
+
+        function populateAlgoSelect(category) {
+            algoSelect.innerHTML = '';
+            ALGORITHMS[category].forEach(algo => {
+                const opt = document.createElement('option');
+                opt.value = algo.id;
+                opt.textContent = algo.name;
+                algoSelect.appendChild(opt);
+            });
+            currentAlgorithm = algoSelect.value;
+            checkSpecialPanelsVisibility();
+            process();
+        }
+
+        function checkSpecialPanelsVisibility() {
+            caesarOptions.classList.toggle('hidden', currentAlgorithm !== 'caesar');
+            enigmaPanel.classList.toggle('hidden', currentAlgorithm !== 'enigma');
+            if (currentAlgorithm !== 'caesar') bruteForceContainer.classList.add('hidden');
+        }
+
+        // --- Event Listeners ---
+        function setupEventListeners() {
+            modeDecodeBtn.addEventListener('click', () => setMode('decode'));
+            modeEncodeBtn.addEventListener('click', () => setMode('encode'));
+
+            categoryBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    categoryBtns.forEach(b => {
+                        b.classList.remove('active', 'border-b-2', 'border-brand-600', 'text-brand-600', 'font-semibold');
+                        b.classList.add('text-slate-500', 'dark:text-slate-400');
+                    });
+                    const target = e.currentTarget;
+                    target.classList.add('active', 'border-b-2', 'border-brand-600', 'text-brand-600', 'font-semibold');
+                    target.classList.remove('text-slate-500', 'dark:text-slate-400');
+                    
+                    currentCategory = target.dataset.category;
+                    populateAlgoSelect(currentCategory);
+                });
+            });
+
+            algoSelect.addEventListener('change', (e) => {
+                currentAlgorithm = e.target.value;
+                checkSpecialPanelsVisibility();
+                process();
+            });
+
+            inputText.addEventListener('input', () => {
+                updateCharCounts();
+                if (liveToggle.checked) process();
+            });
+
+            caesarShiftInput.addEventListener('input', () => { if (liveToggle.checked) process(); });
+
+            // Enigma listeners
+            [enigmaRotorL, enigmaRotorM, enigmaRotorR, enigmaPosL, enigmaPosM, enigmaPosR, 
+             enigmaRingL, enigmaRingM, enigmaRingR, enigmaReflector, enigmaPlugboard].forEach(el => {
+                el.addEventListener('input', () => { if (liveToggle.checked) process(); });
+            });
+
+            caesarBruteBtn.addEventListener('click', runCaesarBruteForce);
+            closeBruteBtn.addEventListener('click', () => bruteForceContainer.classList.add('hidden'));
+
+            magicBtn.addEventListener('click', runAutoDetect);
+            closeMagicBtn.addEventListener('click', () => magicResultsContainer.classList.add('hidden'));
+
+            copyOutputBtn.addEventListener('click', copyToClipboard);
+            pasteInputBtn.addEventListener('click', pasteFromClipboard);
+            
+            clearInputBtn.addEventListener('click', () => {
+                inputText.value = '';
+                outputText.value = '';
+                updateCharCounts();
+                bruteForceContainer.classList.add('hidden');
+                magicResultsContainer.classList.add('hidden');
+            });
+
+            themeToggleBtn.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+            });
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            if (mode === 'decode') {
+                modeDecodeBtn.className = "flex-1 md:flex-none px-6 py-2 rounded-lg font-semibold text-sm transition-all shadow-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-white";
+                modeEncodeBtn.className = "flex-1 md:flex-none px-6 py-2 rounded-lg font-semibold text-sm transition-all text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
+            } else {
+                modeEncodeBtn.className = "flex-1 md:flex-none px-6 py-2 rounded-lg font-semibold text-sm transition-all shadow-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-white";
+                modeDecodeBtn.className = "flex-1 md:flex-none px-6 py-2 rounded-lg font-semibold text-sm transition-all text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
+            }
+            process();
+        }
+
+        function updateCharCounts() {
+            const inVal = inputText.value;
+            const outVal = outputText.value;
+            document.getElementById('inputCharCount').textContent = `Символов: ${inVal.length}`;
+            document.getElementById('inputWordCount').textContent = `Слов: ${inVal.trim() ? inVal.trim().split(/\s+/).length : 0}`;
+            document.getElementById('outputCharCount').textContent = `Символов: ${outVal.length}`;
+        }
+
+        // --- Core Processing Engine ---
+        function process() {
+            const text = inputText.value;
+            if (!text) {
+                outputText.value = '';
+                statusMessage.textContent = 'Готов';
+                statusMessage.className = 'text-slate-400';
+                updateCharCounts();
+                return;
+            }
+
+            try {
+                let result = '';
+                if (currentCategory === 'hash') {
+                    result = computeHash(text, currentAlgorithm);
+                } else if (currentCategory === 'text') {
+                    result = processTextTransform(text, currentAlgorithm);
+                } else {
+                    result = currentMode === 'decode' ? decode(text, currentAlgorithm) : encode(text, currentAlgorithm);
+                }
+                
+                outputText.value = result;
+                statusMessage.textContent = 'Успешно обработано';
+                statusMessage.className = 'text-emerald-500 font-medium';
+            } catch (err) {
+                outputText.value = '';
+                statusMessage.textContent = 'Ошибка формата/декодирования';
+                statusMessage.className = 'text-rose-500 font-medium';
+            }
+            updateCharCounts();
+        }
+
+        // --- Encoders & Decoders ---
+        function encode(str, algo) {
+            switch(algo) {
+                case 'enigma':
+                    return processEnigma(str);
+                case 'base64':
+                    return btoa(unescape(encodeURIComponent(str)));
+                case 'base32':
+                    return base32Encode(str);
+                case 'hex':
+                    return Array.from(new TextEncoder().encode(str)).map(b => b.toString(16).padStart(2, '0')).join(' ');
+                case 'binary':
+                    return Array.from(new TextEncoder().encode(str)).map(b => b.toString(2).padStart(8, '0')).join(' ');
+                case 'url':
+                    return encodeURIComponent(str);
+                case 'html':
+                    return str.replace(/[\u00A0-\u9999<>\&]/g, i => '&#' + i.charCodeAt(0) + ';');
+                case 'caesar':
+                    return caesarCipher(str, parseInt(caesarShiftInput.value) || 3);
+                case 'rot13':
+                    return caesarCipher(str, 13);
+                case 'atbash':
+                    return atbashCipher(str);
+                case 'morse':
+                    return toMorse(str);
+                default:
+                    return str;
+            }
+        }
+
+        function decode(str, algo) {
+            switch(algo) {
+                case 'enigma':
+                    return processEnigma(str); // Enigma is reciprocal
+                case 'base64':
+                    return decodeURIComponent(escape(atob(str.trim())));
+                case 'base32':
+                    return base32Decode(str.trim());
+                case 'hex':
+                    const cleanHex = str.replace(/\s+/g, '');
+                    const bytesHex = new Uint8Array(cleanHex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+                    return new TextDecoder().decode(bytesHex);
+                case 'binary':
+                    const cleanBin = str.replace(/\s+/g, '');
+                    const bytesBin = new Uint8Array(cleanBin.match(/.{1,8}/g).map(byte => parseInt(byte, 2)));
+                    return new TextDecoder().decode(bytesBin);
+                case 'url':
+                    return decodeURIComponent(str);
+                case 'html':
+                    const txt = document.createElement('textarea');
+                    txt.innerHTML = str;
+                    return txt.value;
+                case 'caesar':
+                    return caesarCipher(str, - (parseInt(caesarShiftInput.value) || 3));
+                case 'rot13':
+                    return caesarCipher(str, 13);
+                case 'atbash':
+                    return atbashCipher(str);
+                case 'morse':
+                    return fromMorse(str);
+                default:
+                    return str;
+            }
+        }
+
+        // --- ENIGMA M3 ENGINE ---
+        const ROTOR_WIRINGS = {
+            'I':   { wiring: "EKMFLGDQVZNTOWYHXUSPAIBRCJ", notch: 'Q' },
+            'II':  { wiring: "AJDKSIRUXBLHWTMCQGZNPYFVOE", notch: 'E' },
+            'III': { wiring: "BDFHJLCPRTXVZNYEIWGAKMUSQO", notch: 'V' },
+            'IV':  { wiring: "ESOVPZJAYQUIRHXLNFTGKDCMWB", notch: 'J' },
+            'V':   { wiring: "VZBRGITYUPSDNHLXAWMJQOFECK", notch: 'Z' }
+        };
+
+        const REFLECTORS = {
+            'B': "YRUHQSLDPXNGOKMIEBFZCWVJAT",
+            'C': "FVPJIAOYEDRZXWGCTKUQSBNMHL"
+        };
+
+        function processEnigma(text) {
+            let posL = enigmaPosL.value.charCodeAt(0) - 65;
+            let posM = enigmaPosM.value.charCodeAt(0) - 65;
+            let posR = enigmaPosR.value.charCodeAt(0) - 65;
+
+            const ringL = parseInt(enigmaRingL.value) - 1;
+            const ringM = parseInt(enigmaRingM.value) - 1;
+            const ringR = parseInt(enigmaRingR.value) - 1;
+
+            const rL = ROTOR_WIRINGS[enigmaRotorL.value];
+            const rM = ROTOR_WIRINGS[enigmaRotorM.value];
+            const rR = ROTOR_WIRINGS[enigmaRotorR.value];
+            const reflector = REFLECTORS[enigmaReflector.value];
+
+            // Parse Plugboard
+            const plugPairs = enigmaPlugboard.value.toUpperCase().trim().split(/\s+/);
+            const plugMap = {};
+            for (let i = 0; i < 26; i++) plugMap[i] = i;
+            plugPairs.forEach(pair => {
+                if (pair.length === 2 && /^[A-Z]{2}$/.test(pair)) {
+                    const a = pair.charCodeAt(0) - 65;
+                    const b = pair.charCodeAt(1) - 65;
+                    plugMap[a] = b;
+                    plugMap[b] = a;
+                }
+            });
+
+            const notchL = rL.notch.charCodeAt(0) - 65;
+            const notchM = rM.notch.charCodeAt(0) - 65;
+            const notchR = rR.notch.charCodeAt(0) - 65;
+
+            let result = '';
+
+            for (let char of text.toUpperCase()) {
+                const code = char.charCodeAt(0);
+                if (code < 65 || code > 90) {
+                    result += char;
+                    continue;
+                }
+
+                // Enigma Double Stepping Logic
+                if (posM === notchM) {
+                    posM = (posM + 1) % 26;
+                    posL = (posL + 1) % 26;
+                } else if (posR === notchR) {
+                    posM = (posM + 1) % 26;
+                }
+                posR = (posR + 1) % 26;
+
+                // Pass through Plugboard
+                let signal = plugMap[code - 65];
+
+                // Forward Pass (Right -> Middle -> Left)
+                signal = rotorForward(signal, rR.wiring, posR, ringR);
+                signal = rotorForward(signal, rM.wiring, posM, ringM);
+                signal = rotorForward(signal, rL.wiring, posL, ringL);
+
+                // Reflector
+                signal = (reflector.charCodeAt(signal) - 65) % 26;
+
+                // Reverse Pass (Left -> Middle -> Right)
+                signal = rotorBackward(signal, rL.wiring, posL, ringL);
+                signal = rotorBackward(signal, rM.wiring, posM, ringM);
+                signal = rotorBackward(signal, rR.wiring, posR, ringR);
+
+                // Pass back through Plugboard
+                signal = plugMap[signal];
+
+                result += String.fromCharCode(signal + 65);
+            }
+
+            return result;
+        }
+
+        function rotorForward(c, wiring, pos, ring) {
+            const shift = pos - ring;
+            const input = (c + shift + 26) % 26;
+            const output = (wiring.charCodeAt(input) - 65 + 26) % 26;
+            return (output - shift + 26) % 26;
+        }
+
+        function rotorBackward(c, wiring, pos, ring) {
+            const shift = pos - ring;
+            const input = (c + shift + 26) % 26;
+            const output = (wiring.indexOf(String.fromCharCode(input + 65)) + 26) % 26;
+            return (output - shift + 26) % 26;
+        }
+
+        // --- Helper Algorithms ---
+        function caesarCipher(str, shift) {
+            const shiftVal = (shift % 26 + 26) % 26;
+            const ruShiftVal = (shift % 32 + 32) % 32;
+
+            return str.replace(/[a-zA-Zа-яА-ЯёЁ]/g, (char) => {
+                const code = char.charCodeAt(0);
+                if (code >= 65 && code <= 90) return String.fromCharCode(((code - 65 + shiftVal) % 26) + 65);
+                if (code >= 97 && code <= 122) return String.fromCharCode(((code - 97 + shiftVal) % 26) + 97);
+                if (code >= 1040 && code <= 1071) return String.fromCharCode(((code - 1040 + ruShiftVal) % 32) + 1040);
+                if (code >= 1072 && code <= 1103) return String.fromCharCode(((code - 1072 + ruShiftVal) % 32) + 1072);
+                return char;
+            });
+        }
+
+        function atbashCipher(str) {
+            return str.replace(/[a-zA-Zа-яА-Я]/g, (char) => {
+                const code = char.charCodeAt(0);
+                if (code >= 65 && code <= 90) return String.fromCharCode(90 - (code - 65));
+                if (code >= 97 && code <= 122) return String.fromCharCode(122 - (code - 97));
+                if (code >= 1040 && code <= 1071) return String.fromCharCode(1071 - (code - 1040));
+                if (code >= 1072 && code <= 1103) return String.fromCharCode(1103 - (code - 1072));
+                return char;
+            });
+        }
+
+        function toMorse(str) { return str.toUpperCase().split('').map(c => MORSE_MAP[c] || c).join(' '); }
+        function fromMorse(str) { return str.trim().split(/\s+/).map(code => REVERSE_MORSE_MAP[code] || code).join(''); }
+
+        const B32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+        function base32Encode(str) {
+            const bytes = new TextEncoder().encode(str);
+            let bits = '', output = '';
+            for (let i = 0; i < bytes.length; i++) bits += bytes[i].toString(2).padStart(8, '0');
+            for (let i = 0; i < bits.length; i += 5) {
+                const chunk = bits.substring(i, i + 5).padEnd(5, '0');
+                output += B32_ALPHABET[parseInt(chunk, 2)];
+            }
+            while (output.length % 8 !== 0) output += '=';
+            return output;
+        }
+
+        function base32Decode(str) {
+            const cleanStr = str.replace(/=/g, '').toUpperCase();
+            let bits = '';
+            for (let i = 0; i < cleanStr.length; i++) {
+                const index = B32_ALPHABET.indexOf(cleanStr[i]);
+                if (index !== -1) bits += index.toString(2).padStart(5, '0');
+            }
+            const bytes = [];
+            for (let i = 0; i + 8 <= bits.length; i += 8) {
+                bytes.push(parseInt(bits.substring(i, i + 8), 2));
+            }
+            return new TextDecoder().decode(new Uint8Array(bytes));
+        }
+
+        function computeHash(text, algo) {
+            try {
+                if (typeof CryptoJS !== 'undefined') {
+                    if (algo === 'md5') return CryptoJS.MD5(text).toString();
+                    if (algo === 'sha1') return CryptoJS.SHA1(text).toString();
+                    if (algo === 'sha256') return CryptoJS.SHA256(text).toString();
+                }
+            } catch(e) {}
+            return "Ошибка расчета хэша";
+        }
+
+        function processTextTransform(text, algo) {
+            if (algo === 'reverse') return text.split('').reverse().join('');
+            if (algo === 'uppercase') return text.toUpperCase();
+            if (algo === 'lowercase') return text.toLowerCase();
+            if (algo === 'titlecase') return text.toLowerCase().replace(/(?:^|\s|-)\S/g, match => match.toUpperCase());
+            return text;
+        }
+
+        // --- Caesar Brute Force ---
+        function runCaesarBruteForce() {
+            const text = inputText.value;
+            if (!text) return;
+            bruteForceList.innerHTML = '';
+            for (let shift = 1; shift <= 25; shift++) {
+                const decoded = caesarCipher(text, -shift);
+                const item = document.createElement('div');
+                item.className = 'p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col gap-1 cursor-pointer hover:border-brand-500 transition-colors';
+                item.innerHTML = `
+                    <div class="flex justify-between items-center text-xs text-slate-400 font-semibold">
+                        <span>Сдвиг -${shift}</span>
+                        <span class="text-brand-500">Выбрать</span>
+                    </div>
+                    <div class="text-sm font-mono text-slate-800 dark:text-slate-200 break-all">${escapeHtml(decoded)}</div>
+                `;
+                item.addEventListener('click', () => {
+                    caesarShiftInput.value = shift;
+                    process();
+                    bruteForceContainer.classList.add('hidden');
+                });
+                bruteForceList.appendChild(item);
+            }
+            bruteForceContainer.classList.remove('hidden');
+        }
+
+        // --- Auto-Detect Engine ---
+        function runAutoDetect() {
+            const text = inputText.value.trim();
+            if (!text) {
+                showToast('Введите текст для анализа', 'error');
+                return;
+            }
+
+            const candidates = [];
+
+            if (/^[A-Za-z0-9+/=]+$/.test(text) && text.length % 4 === 0) {
+                try {
+                    const dec = decodeURIComponent(escape(atob(text)));
+                    if (dec && dec !== text) candidates.push({ type: 'Base64', val: dec });
+                } catch(e){}
+            }
+
+            if (/^[0-9a-fA-F\s]+$/.test(text) && text.replace(/\s/g, '').length % 2 === 0) {
+                try {
+                    const cleanHex = text.replace(/\s+/g, '');
+                    const bytes = new Uint8Array(cleanHex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+                    const dec = new TextDecoder().decode(bytes);
+                    if (dec && !/[\x00-\x08\x0E-\x1F]/.test(dec)) candidates.push({ type: 'Hexadecimal', val: dec });
+                } catch(e){}
+            }
+
+            if (/^[01\s]+$/.test(text)) {
+                try {
+                    const cleanBin = text.replace(/\s+/g, '');
+                    if (cleanBin.length % 8 === 0) {
+                        const bytes = new Uint8Array(cleanBin.match(/.{1,8}/g).map(b => parseInt(b, 2)));
+                        const dec = new TextDecoder().decode(bytes);
+                        if (dec) candidates.push({ type: 'Binary', val: dec });
+                    }
+                } catch(e){}
+            }
+
+            if (/^[.\-\/\s]+$/.test(text)) {
+                try {
+                    const dec = fromMorse(text);
+                    if (dec) candidates.push({ type: 'Азбука Морзе', val: dec });
+                } catch(e){}
+            }
+
+            if (text.includes('%')) {
+                try {
+                    const dec = decodeURIComponent(text);
+                    if (dec !== text) candidates.push({ type: 'URL Encoded', val: dec });
+                } catch(e){}
+            }
+
+            magicResultsList.innerHTML = '';
+            if (candidates.length === 0) {
+                magicResultsList.innerHTML = `<div class="text-sm text-slate-500 text-center py-4">Не удалось автоматически определить тип кодировки.</div>`;
+            } else {
+                candidates.forEach(c => {
+                    const card = document.createElement('div');
+                    card.className = 'p-3.5 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col gap-1.5 cursor-pointer hover:border-purple-500 transition-colors';
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center text-xs font-bold text-purple-600 dark:text-purple-400">
+                            <span>Обнаружен формат: ${c.type}</span>
+                            <span class="text-xs bg-purple-100 dark:bg-purple-950/60 px-2 py-0.5 rounded">Применить</span>
+                        </div>
+                        <div class="text-sm font-mono text-slate-800 dark:text-slate-100 break-all">${escapeHtml(c.val)}</div>
+                    `;
+                    card.addEventListener('click', () => {
+                        outputText.value = c.val;
+                        magicResultsContainer.classList.add('hidden');
+                        showToast(`Применено декодирование ${c.type}`);
+                        updateCharCounts();
+                    });
+                    magicResultsList.appendChild(card);
+                });
+            }
+            magicResultsContainer.classList.remove('hidden');
+        }
+
+        // --- Clipboard Handling ---
+        async function pasteFromClipboard() {
+            try {
+                if (navigator.clipboard && navigator.clipboard.readText) {
+                    const text = await navigator.clipboard.readText();
+                    if (text) {
+                        inputText.value = text;
+                        updateCharCounts();
+                        process();
+                        showToast('Текст вставлен из буфера');
+                        return;
+                    }
+                }
+            } catch (err) {}
+            showToast('Не удалось вставить из буфера', 'error');
+        }
+
+        function copyToClipboard() {
+            const val = outputText.value;
+            if (!val) return;
+            const textarea = document.createElement('textarea');
+            textarea.value = val;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showToast('Скопировано в буфер обмена!');
+            } catch (err) {
+                showToast('Ошибка копирования', 'error');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastText = document.getElementById('toastText');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastText.textContent = message;
+            if (type === 'error') {
+                toastIcon.className = 'fa-solid fa-circle-xmark text-rose-500';
+            } else {
+                toastIcon.className = 'fa-solid fa-circle-check text-emerald-400 dark:text-emerald-500';
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
+        }
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
